@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vanilla JavaScript Stopwatch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .stopwatch {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #display {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        #lapTimes {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="stopwatch">
+        <div id="display">00:00:00.000</div>
+        <div class="buttons">
+            <button id="startBtn">Start</button>
+            <button id="pauseBtn" disabled>Pause</button>
+            <button id="resetBtn" disabled>Reset</button>
+            <button id="lapBtn" disabled>Lap</button>
+        </div>
+        <div id="lapTimes"></div>
+    </div>
+
+    <script>
+        class Stopwatch {
+            constructor() {
+                this.display = document.getElementById('display');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.lapBtn = document.getElementById('lapBtn');
+                this.lapTimesContainer = document.getElementById('lapTimes');
+
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.timerInterval = null;
+                this.laps = [];
+
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+                this.lapBtn.addEventListener('click', () => this.lap());
+            }
+
+            start() {
+                if (!this.timerInterval) {
+                    this.startTime = Date.now() - this.elapsedTime;
+                    this.timerInterval = setInterval(() => this.update(), 10);
+                    this.startBtn.disabled = true;
+                    this.pauseBtn.disabled = false;
+                    this.resetBtn.disabled = false;
+                    this.lapBtn.disabled = false;
+                }
+            }
+
+            pause() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                    this.startBtn.disabled = false;
+                    this.pauseBtn.disabled = true;
+                }
+            }
+
+            reset() {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.display.textContent = '00:00:00.000';
+                this.laps = [];
+                this.lapTimesContainer.innerHTML = '';
+                this.startBtn.disabled = false;
+                this.pauseBtn.disabled = true;
+                this.resetBtn.disabled = true;
+                this.lapBtn.disabled = true;
+            }
+
+            lap() {
+                if (this.timerInterval) {
+                    this.laps.push(this.elapsedTime);
+                    const lapTime = this.formatTime(this.elapsedTime);
+                    const lapElement = document.createElement('div');
+                    lapElement.textContent = `Lap ${this.laps.length}: ${lapTime}`;
+                    this.lapTimesContainer.appendChild(lapElement);
+                }
+            }
+
+            update() {
+                this.elapsedTime = Date.now() - this.startTime;
+                this.display.textContent = this.formatTime(this.elapsedTime);
+            }
+
+            formatTime(milliseconds) {
+                const hours = Math.floor(milliseconds / 3600000);
+                const minutes = Math.floor((milliseconds % 3600000) / 60000);
+                const seconds = Math.floor((milliseconds % 60000) / 1000);
+                const ms = Math.floor(milliseconds % 1000);
+
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+            }
+        }
+
+        new Stopwatch();
+    </script>
+</body>
+</html>
